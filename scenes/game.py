@@ -19,7 +19,7 @@ class GameScene:
 
         self.frame = 0
         
-        self.player = Player(self, x=100, y=100)
+        self.player = Player(self, start_position = self.grid.getScreenPosition((23, 14)))
         self.prev_time = pygame.time.get_ticks()
 
 
@@ -33,10 +33,12 @@ class GameScene:
         
 
         self.player.update(dt)
+        print(self.player.direction)
     
     def draw(self, screen):
         screen.blit(self.background, (0, 0))  # Display the background
         screen.blit(self.maze_image, (0, 0))     
+        
         self.grid.draw(screen)   
         self.player.draw(screen)
 

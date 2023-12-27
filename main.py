@@ -37,7 +37,7 @@ if __name__ == "__main__":
             if current_scene == game:
                 game.handle_events(event)
 
-                    
+        #DOWN AND RIGHT DOES NOT WORK CORRECTLY 
 
         if current_scene == main_menu:
             main_menu.draw(screen)
