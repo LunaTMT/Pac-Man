@@ -16,17 +16,28 @@ class Grid(list):
         lines = str.strip().split('\n')
         return cls([list(line) for line in lines]) #initialising the str to a grid object
 
-    def getScreenPosition(self, position):
-        row, column = position
-        return Vector2(column * const.TILE_WIDTH, row * const.TILE_HEIGHT)
-        
 
-    def getArrayPosition(self, position):
+    def get_screen_position(self, position):
+        row, column = position
+        return (column * const.TILE_WIDTH, row * const.TILE_HEIGHT)
+
+    def get_array_position(self, position):
         x, y = position
         return (int(y // const.TILE_HEIGHT), int(x // const.TILE_WIDTH))
 
+    def get_available_directions(self, position):
+        r, c = position
+
+        available = []
+        for dr, dc, direction in ((-1, 0, "up"), (1, 0, "down"), (0, -1, "left"), (0, 1, "right")):
+            dr += r
+            dc += c
+            if self[dr][dc] != '#':
+                available.append(direction)
+        return available
+
     def in_bounds(self, position):
-        r, c = self.getArrayPosition(position)
+        r, c = self.get_array_position(position)
         return self[r][c] != "#"
 
     
@@ -43,14 +54,14 @@ class Grid(list):
 
                 if char == '.': #Pellets
                     rect = pygame.Rect(rect_x, rect_y, const.TILE_WIDTH, const.TILE_HEIGHT)
-                    pygame.draw.rect(screen, colours.YELLOW, rect)
+                    #pygame.draw.rect(screen, colours.YELLOW, rect)
 
                     pygame.draw.circle(screen, colours.PELLETS, (circle_x, circle_y), const.TILE_WIDTH // 4)
                 elif char == "o": #Power pellets
                     rect = pygame.Rect(rect_x , rect_y, const.TILE_WIDTH, const.TILE_HEIGHT)
-                    pygame.draw.rect(screen, colours.YELLOW, rect)
+                    #pygame.draw.rect(screen, colours.YELLOW, rect)
 
                     pygame.draw.circle(screen, colours.PELLETS, (circle_x, circle_y), const.TILE_WIDTH // 2)
                 elif char == "#":
                     rect = pygame.Rect(rect_x, rect_y, const.TILE_WIDTH, const.TILE_HEIGHT)
-                    pygame.draw.rect(screen, colours.BLUE, rect)
+                    #pygame.draw.rect(screen, colours.BLUE, rect)

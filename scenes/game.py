@@ -19,7 +19,7 @@ class GameScene:
 
         self.frame = 0
         
-        self.player = Player(self, start_position = self.grid.getScreenPosition((23, 14)))
+        self.player = Player(self, start_position = self.grid.get_screen_position((23, 14)))
         self.prev_time = pygame.time.get_ticks()
 
 
@@ -33,7 +33,8 @@ class GameScene:
         
 
         self.player.update(dt)
-        print(self.player.direction)
+        self.player.collision = False
+        
     
     def draw(self, screen):
         screen.blit(self.background, (0, 0))  # Display the background
