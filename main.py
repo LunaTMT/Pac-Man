@@ -21,8 +21,6 @@ if __name__ == "__main__":
     # Game loop
     running = True
     while running:
-        clock.tick(60) 
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -43,5 +41,8 @@ if __name__ == "__main__":
             game.update()  
             game.draw(screen) 
             game.frame += 1 
+
+        fps = clock.get_fps()
+        clock.tick(60) 
 
     pygame.quit()

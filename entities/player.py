@@ -10,7 +10,6 @@ class Player(pygame.sprite.Sprite):
         # __init__ parameter assignment
         self.game = game
         self.grid = game.grid
-        self.x, self.y = start_position
 
         #sprite sheets and images
         self.movement_sheet = pygame.image.load('assets/images/player/player_movement.png')  
@@ -19,58 +18,51 @@ class Player(pygame.sprite.Sprite):
         
         #set sprite rect
         self.rect = self.image.get_rect()
-        self.rect.topleft = (start_position)
+        
+        self.array_pos = start_position
+
+        self.current_image = self.movement_images["right"][0]
 
         #pacman attributes
-        self.direction = 'left' 
-        self.speed = 160
+        self.direction = None 
+        self.speed = 120
         self.velocity = Vector2(1, 0)
         self.movements = [] #queue
         self.eaten = 0 
+        self.eaten_power_up = False
+        self.in_tunnel = False
+        
+
+    @property
+    def array_pos(self):
+        return self.grid.get_array_position(self.rect.center)
    
+    @array_pos.setter
+    def array_pos(self, position):
+        print("set to :", position)
+        self.rect.topleft =  self.grid.get_screen_position(position)
+        
+
     #Init_method
     def initialise_sprite_images(self):
-        frame_width = 16
-        frame_height = 16  
+        frame_width = 15
+        frame_height = 15 
 
         #init images
         for r, direction in enumerate(self.movement_images):
             for c in range(2): 
-                x = (c * frame_width) + (c+1)
-                y = (r * frame_height) + (r+1)
+                x = (c * frame_width) 
+                y = (r * frame_height) 
                 rect = pygame.Rect(x, y, frame_width, frame_height)
                 self.movement_images[direction].append(self.movement_sheet.subsurface(rect))
-        
         return self.movement_images['right'][0]
   
     """Update Methods"""
     def check_edge_collision(self, displacement):
         def is_boundary_collision(position):
             new_position = position + displacement
-            collision = not self.grid.in_bounds(new_position)
-            
-            if collision:
-                match self.direction:
-                    case "up":
-                        direction_vector = Vector2(1, 0)
-                    case "left":
-                        direction_vector = Vector2(0, 1)
-                    case "down":
-                        direction_vector = Vector2(-1, 0)
-                    case "right":
-                        direction_vector = Vector2(0, -1)
-                    case _:
-                        return
-
-                #As collided we must return to old position
-                #Get array position and add the opposite vector (direction_vector)
-                #Get the screen position of this 'old position' and update the direction back to previous one
-                new_array_position = Vector2(self.game.grid.get_array_position(new_position))
-                new_position = new_array_position + direction_vector #shift back to old position
-                #self.rect.topleft = self.game.grid.get_screen_position(new_position)
-                
-                return True
-            return False
+            collision = not self.grid.in_bounds(new_position)         
+            return collision
 
         if self.direction in ("up", "left"):
             return is_boundary_collision(self.rect.topleft)
@@ -78,77 +70,120 @@ class Player(pygame.sprite.Sprite):
             return is_boundary_collision(self.rect.topright)
         else:
             return is_boundary_collision(self.rect.bottomleft)
-    def check_eating_pellet(self, position):
-        r, c = position
-        if self.game.grid[r][c] == ".":
-            self.game.grid[r][c] = ' '
-            self.eaten += 1
+        
+    def check_eating(self):
+        r, c = self.array_pos
+    
+        match self.game.grid[r][c]:
+            case ".":
+                self.game.grid[r][c] = ' '
+                self.eaten += 1
+            case "o":
+                print("eaten power up")
+                self.game.grid[r][c] = ' '
+                self.eaten_power_up = True
+                self.eaten += 1
+        
+    def check_traveling_through_passage(self):
+        #print(self.rect.topleft)
+        #print(self.array_pos)
+        #print(self.direction)
+        #print(self.movements)
+        
+        #14, 0
+        #14, 29
+        
 
-    def set_directional_velocity(self, array_pos, available_positions):
-        # print(self.movements)
+        if not self.in_tunnel:
+            match self.array_pos:
+                case (14, 0):
+                    self.array_pos = (14, 29)
+                    self.in_tunnel = True
+                case (14, 29):
+                    self.array_pos = (14, 0)
+                    self.in_tunnel = True
+        else:
+            if self.array_pos in ((14, 1), (14, 28)):
+                self.in_tunnel = False
+        #if self.grid.in_bounds(self.array_pos):
+        #    self.in_tunnel = False
+            
+        
+    
 
-        tx, ty = target = self.grid.get_screen_position(array_pos)
- 
-        if self.movements and self.movements[-1] in available_positions:  #and  (tx-5, ty-5) <= self.rect.topleft <= (tx+5, ty+5):
-            self.rect.topleft = self.grid.get_screen_position(array_pos)
+    def set_directional_velocity(self):
+        target = self.grid.get_screen_position(self.array_pos) #to stop jitteriness on turning
+        available_positions = self.grid.get_available_directions(self.array_pos) #the available directions the player can turn
+
+        """
+        Only changed when 
+            - its a valid movement
+            - The rectangle top left position is exactly on the new target position (to create smooth transition)
+        """
+        
+        if (self.movements and self.movements[-1] in available_positions and self.rect.topleft == target):
+    
             match self.movements[-1]:
                 case "up":
                     self.direction = 'up'
-                    self.velocity = Vector2(0, -self.speed)  # Set velocity for upward movement
+                    self.velocity = Vector2(0, -self.speed)  
                 case "down":
                     self.direction = 'down'
                     self.velocity =  Vector2(0, self.speed)
                 case "left":
                     self.direction = 'left'
-                    self.velocity =  Vector2(-self.speed, 0)  # Set velocity for upward movement
+                    self.velocity =  Vector2(-self.speed, 0) 
                 case "right":
                     self.direction = 'right'
                     self.velocity =  Vector2(self.speed, 0)
-            self.movements = []
+            self.movements = [] #reset queue
         return self.velocity
     """--------------"""
 
     """Default Game loop functions"""
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
-            match event.key:
-                case pygame.K_UP:
+            if event.key:
+                if event.key == pygame.K_UP and self.direction != "up":
                     self.movements.append("up")
-                case pygame.K_DOWN:
+
+                elif event.key == pygame.K_DOWN  and self.direction != "down":
                     self.movements.append("down")
-                case pygame.K_LEFT:
+
+                elif event.key == pygame.K_LEFT  and self.direction != "left":
                     self.movements.append("left")
-                case pygame.K_RIGHT:
+
+                elif event.key == pygame.K_RIGHT  and self.direction != "right":
                     self.movements.append("right")
           
     def update(self, dt):
-        array_pos = self.grid.get_array_position(self.rect.center) #current position on grid array
-        available_positions = self.grid.get_available_directions(array_pos) #the available directions the player can turn
+        
 
-        self.check_eating_pellet(array_pos)
-        self.set_directional_velocity(array_pos, available_positions) #we get the velocity based on the available positions
-      
+        
+        self.check_eating()
+        self.set_directional_velocity() #we get the velocity based on the available positions
+
         displacement = self.velocity * dt
-
         collision = self.check_edge_collision(displacement)
 
-        if not collision:
+        if collision:
+            self.rect.topleft = self.grid.get_screen_position(self.array_pos)
+        else:
             self.rect.move_ip(displacement)
         
-        self.rect.clamp_ip(pygame.Rect(0, 0, const.SCREEN_WIDTH, const.SCREEN_HEIGHT))
-
+        self.check_traveling_through_passage()
+ 
     def draw(self, screen):
         
-        if self.game.frame < 20: 
+        if self.game.frame < 10: 
             current_frame = 0
-        elif self.game.frame < 40:
+        elif self.game.frame < 20:
             current_frame = 1
         else:
             current_frame = 0
             self.game.frame = 0
-
-        #print(current_frame)
-        #if not self.collision:
-        current_image = self.movement_images[self.direction][current_frame]
-
-        screen.blit(current_image, (self.rect.x, self.rect.y))
+        
+        if self.direction:
+            self.current_image = self.movement_images[self.direction][current_frame]
+        screen.blit(self.current_image, (self.rect.x - const.TILE_WIDTH, self.rect.y))
+    """--------------"""

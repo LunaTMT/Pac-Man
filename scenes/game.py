@@ -19,7 +19,7 @@ class GameScene:
 
         self.frame = 0
         
-        self.player = Player(self, start_position = self.grid.get_screen_position((23, 14)))
+        self.player = Player(self, (23, 14))
         self.prev_time = pygame.time.get_ticks()
 
 

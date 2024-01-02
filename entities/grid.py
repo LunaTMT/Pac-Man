@@ -32,24 +32,28 @@ class Grid(list):
         for dr, dc, direction in ((-1, 0, "up"), (1, 0, "down"), (0, -1, "left"), (0, 1, "right")):
             dr += r
             dc += c
-            if self[dr][dc] != '#':
+            if self.in_borders((dr, dc)) and self[dr][dc] != '#':
                 available.append(direction)
         return available
 
     def in_bounds(self, position):
         r, c = self.get_array_position(position)
-        return self[r][c] != "#"
+        return self[r][c] != "#" 
+
+    def in_borders(self, position):
+        r, c = position
+        return (0 <= r < const.ROWS and 0 <= c < const.COLUMNS)
 
     
     def draw(self, screen):
         for r in range(const.ROWS):
             for c in range(const.COLUMNS):
                 char = self[r][c]  
-                rect_x = (c * const.TILE_WIDTH) #+ const.TILE_WIDTH/2
-                rect_y = (r * const.TILE_WIDTH) #+ const.TILE_WIDTH/2
+                rect_x = (c * const.TILE_WIDTH) - const.TILE_WIDTH
+                rect_y = (r * const.TILE_HEIGHT) 
 
-                circle_x = rect_x + (const.TILE_WIDTH/2)
-                circle_y = rect_y + (const.TILE_HEIGHT/2)
+                circle_x = rect_x + (const.TILE_WIDTH/2) #- const.TILE_WIDTH
+                circle_y = rect_y + (const.TILE_HEIGHT/2) 
 
 
                 if char == '.': #Pellets
