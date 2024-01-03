@@ -1,14 +1,14 @@
 import pygame
 from scenes.game import GameScene
 from scenes.main_menu import MainMenu
-import const
+import const    
 
 if __name__ == "__main__":
 
     # Initialize Pygame
     pygame.init()
 
-    # Set up the screen
+    # Set up the screen 
     screen = pygame.display.set_mode(const.SCREEN_SIZE)
     pygame.display.set_caption("Pacman Game")
 

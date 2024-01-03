@@ -1,9 +1,11 @@
 import pygame
 from pygame import Vector2
 import const
-
+import colours
 
 class Player(pygame.sprite.Sprite):
+    
+    """INIT"""
     def __init__(self, game, start_position):
         super().__init__()
 
@@ -13,14 +15,12 @@ class Player(pygame.sprite.Sprite):
 
         #sprite sheets and images
         self.movement_sheet = pygame.image.load('assets/images/player/player_movement.png')  
+        self.movement_sheet.set_colorkey(colours.BLACK)
         self.movement_images = {'right': [], 'left': [], 'up': [], 'down': []}
-        self.image = self.initialise_sprite_images()
-        
-        #set sprite rect
-        self.rect = self.image.get_rect()
-        
-        self.array_pos = start_position
 
+        #set sprite rect
+        self.image = self.initialise_sprite_images()
+        self.rect = self.image.get_rect()
         self.current_image = self.movement_images["right"][0]
 
         #pacman attributes
@@ -31,19 +31,8 @@ class Player(pygame.sprite.Sprite):
         self.eaten = 0 
         self.eaten_power_up = False
         self.in_tunnel = False
+        self.array_pos = start_position
         
-
-    @property
-    def array_pos(self):
-        return self.grid.get_array_position(self.rect.center)
-   
-    @array_pos.setter
-    def array_pos(self, position):
-        print("set to :", position)
-        self.rect.topleft =  self.grid.get_screen_position(position)
-        
-
-    #Init_method
     def initialise_sprite_images(self):
         frame_width = 15
         frame_height = 15 
@@ -56,7 +45,18 @@ class Player(pygame.sprite.Sprite):
                 rect = pygame.Rect(x, y, frame_width, frame_height)
                 self.movement_images[direction].append(self.movement_sheet.subsurface(rect))
         return self.movement_images['right'][0]
-  
+    """--------------"""
+
+
+    @property
+    def array_pos(self):
+        return self.grid.get_array_position(self.rect.center)
+   
+    @array_pos.setter
+    def array_pos(self, position):
+        self.rect.topleft =  self.grid.get_screen_position(position)
+        
+    
     """Update Methods"""
     def check_edge_collision(self, displacement):
         def is_boundary_collision(position):
@@ -85,14 +85,6 @@ class Player(pygame.sprite.Sprite):
                 self.eaten += 1
         
     def check_traveling_through_passage(self):
-        #print(self.rect.topleft)
-        #print(self.array_pos)
-        #print(self.direction)
-        #print(self.movements)
-        
-        #14, 0
-        #14, 29
-        
 
         if not self.in_tunnel:
             match self.array_pos:
@@ -105,12 +97,7 @@ class Player(pygame.sprite.Sprite):
         else:
             if self.array_pos in ((14, 1), (14, 28)):
                 self.in_tunnel = False
-        #if self.grid.in_bounds(self.array_pos):
-        #    self.in_tunnel = False
-            
-        
-    
-
+ 
     def set_directional_velocity(self):
         target = self.grid.get_screen_position(self.array_pos) #to stop jitteriness on turning
         available_positions = self.grid.get_available_directions(self.array_pos) #the available directions the player can turn
@@ -122,7 +109,7 @@ class Player(pygame.sprite.Sprite):
         """
         
         if (self.movements and self.movements[-1] in available_positions and self.rect.topleft == target):
-    
+            
             match self.movements[-1]:
                 case "up":
                     self.direction = 'up'
@@ -136,9 +123,9 @@ class Player(pygame.sprite.Sprite):
                 case "right":
                     self.direction = 'right'
                     self.velocity =  Vector2(self.speed, 0)
-            self.movements = [] #reset queue
         return self.velocity
     """--------------"""
+
 
     """Default Game loop functions"""
     def handle_event(self, event):
@@ -157,14 +144,13 @@ class Player(pygame.sprite.Sprite):
                     self.movements.append("right")
           
     def update(self, dt):
-        
-
-        
+    
         self.check_eating()
         self.set_directional_velocity() #we get the velocity based on the available positions
 
         displacement = self.velocity * dt
         collision = self.check_edge_collision(displacement)
+        
 
         if collision:
             self.rect.topleft = self.grid.get_screen_position(self.array_pos)

@@ -5,6 +5,7 @@ import colours
 import const
 from entities.grid import Grid
 from entities.player import Player
+from entities.enemy import Enemy
 
 
 class GameScene:
@@ -18,9 +19,17 @@ class GameScene:
         self.grid = Grid.from_string(const.BASE_GRID)
 
         self.frame = 0
-        
-        self.player = Player(self, (23, 14))
         self.prev_time = pygame.time.get_ticks()
+
+        self.spawn_entities()        
+        
+
+
+    def spawn_entities(self):
+        self.player = Player(self, (23, 14))
+        enemy_spawn_positions = ((14,12), (14,13), (14,14), (14,15))
+        self.enemies = pygame.sprite.Group((Enemy(self, enemy_spawn_positions[i], i) for i in range(4)))
+        
 
 
     def handle_events(self, event):
@@ -34,6 +43,8 @@ class GameScene:
 
         self.player.update(dt)
         self.player.collision = False
+
+        self.enemies.update(dt)
         
     
     def draw(self, screen):
@@ -42,6 +53,7 @@ class GameScene:
         
         self.grid.draw(screen)   
         self.player.draw(screen)
+        self.enemies.draw(screen)
 
         pygame.display.flip()
 
