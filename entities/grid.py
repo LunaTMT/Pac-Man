@@ -1,7 +1,8 @@
 import pygame
 import const
 import colours
-
+from .player import Player
+from .enemy import Enemy
 from pygame import Vector2
 
 
@@ -25,7 +26,7 @@ class Grid(list):
         x, y = position
         return (int(y // const.TILE_HEIGHT), int(x // const.TILE_WIDTH))
 
-    def get_available_directions(self, position):
+    def get_available_directions(self, actor, position):
         r, c = position
 
         available = []
@@ -33,7 +34,12 @@ class Grid(list):
             dr += r
             dc += c
             if self.in_borders((dr, dc)) and self[dr][dc] != '#':
-                available.append(direction)
+                #Used to ensure player does not going into monster pen but enemy can move through
+                if isinstance(actor, Player) and not (dr == 12 and (14 <= dc <= 15)): 
+                    available.append(direction)
+                elif isinstance(actor, Enemy):
+                    available.append(direction)
+
         return available
 
     def in_bounds(self, position):

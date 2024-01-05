@@ -59,6 +59,9 @@ class Enemy(pygame.sprite.Sprite):
         self.current_image = self.movement_images[name]["right"][0]
 
 
+        """
+         The order of preference for choosing which ghost's counter to activate is: Pinky, then Inky, and then Clyde.
+        """
 
         self.array_pos = start_position
 

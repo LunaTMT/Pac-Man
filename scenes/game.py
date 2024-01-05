@@ -40,7 +40,6 @@ class GameScene:
         dt = (current_time - self.prev_time) / 1000.0  # Convert to seconds
         self.prev_time = current_time
         
-
         self.player.update(dt)
         self.player.collision = False
 

@@ -26,12 +26,16 @@ class Player(pygame.sprite.Sprite):
         #pacman attributes
         self.direction = None 
         self.speed = 120
+        self.boost_speed = self.speed + 3
+        self.boost_timer = 0
         self.velocity = Vector2(1, 0)
         self.movements = [] #queue
         self.eaten = 0 
         self.eaten_power_up = False
         self.in_tunnel = False
         self.array_pos = start_position
+
+        self.has_moved_from_default = False
         
     def initialise_sprite_images(self):
         frame_width = 15
@@ -47,7 +51,7 @@ class Player(pygame.sprite.Sprite):
         return self.movement_images['right'][0]
     """--------------"""
 
-
+    """Properties"""
     @property
     def array_pos(self):
         return self.grid.get_array_position(self.rect.center)
@@ -55,8 +59,8 @@ class Player(pygame.sprite.Sprite):
     @array_pos.setter
     def array_pos(self, position):
         self.rect.topleft =  self.grid.get_screen_position(position)
-        
-    
+    """--------------"""  
+
     """Update Methods"""
     def check_edge_collision(self, displacement):
         def is_boundary_collision(position):
@@ -85,7 +89,6 @@ class Player(pygame.sprite.Sprite):
                 self.eaten += 1
         
     def check_traveling_through_passage(self):
-
         if not self.in_tunnel:
             match self.array_pos:
                 case (14, 0):
@@ -98,34 +101,86 @@ class Player(pygame.sprite.Sprite):
             if self.array_pos in ((14, 1), (14, 28)):
                 self.in_tunnel = False
  
+    def check_booster_finished(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.boost_timer >= 500:
+            self.set_velocity(self.direction, self.speed)
+            self.boost_timer = 0
+            return True
+        return False
+
+
     def set_directional_velocity(self):
         target = self.grid.get_screen_position(self.array_pos) #to stop jitteriness on turning
-        available_positions = self.grid.get_available_directions(self.array_pos) #the available directions the player can turn
-
-        """
-        Only changed when 
-            - its a valid movement
-            - The rectangle top left position is exactly on the new target position (to create smooth transition)
-        """
+        available_positions_on_grid = self.grid.get_available_directions(self, self.array_pos) #the available directions the player can turn
         
-        if (self.movements and self.movements[-1] in available_positions and self.rect.topleft == target):
-            
-            match self.movements[-1]:
-                case "up":
-                    self.direction = 'up'
-                    self.velocity = Vector2(0, -self.speed)  
-                case "down":
-                    self.direction = 'down'
-                    self.velocity =  Vector2(0, self.speed)
-                case "left":
-                    self.direction = 'left'
-                    self.velocity =  Vector2(-self.speed, 0) 
-                case "right":
-                    self.direction = 'right'
-                    self.velocity =  Vector2(self.speed, 0)
-        return self.velocity
-    """--------------"""
+        """ So long as there are actual movements in the queue
+            AND this movement is an available position on the grid
+            AND the player is bang on the target position (used to ensure smooth transition)
+            AND the player is not in the secret tunnel 
+            (^ otherwise they can glitch out of board as there are no boundaries for above and below in tunnel (SEE ARRAY IN CONST VAL = "_"))    
+        """
+        if (self.movements 
+            and self.movements[-1] in available_positions_on_grid 
+            and self.rect.topleft == target 
+            and not self.in_tunnel):
 
+            movement = self.movements[-1]
+
+            """
+            In the following we change the velocity based on the direction
+
+            However the direction we turn is import for the speed we set the player at:
+                We only want to give a boost when the user turns a corner, this would come under as an ALTERNATIVE DIRECTION
+                The speed remains the default when turning around (AN OPPOSITE DIRECTION)
+            """
+
+            if movement == self.get_current_direction_opposite():
+                self.set_velocity(self.movements[-1], self.speed)
+
+            elif movement in self.get_current_direction_alternatives():
+                self.set_velocity(self.movements[-1], self.boost_speed)
+                self.boost_timer = pygame.time.get_ticks()
+                print("boosting")    #boost
+
+
+            #We dont want to boost on first move
+            if not self.has_moved_from_default:
+                self.has_moved_from_default = True
+
+            #Of course at the end update the current direction 
+            self.direction = self.movements[-1]
+        
+        return self.velocity
+    
+    def set_velocity(self, direction, speed):
+        match direction:
+            case "up":
+                self.velocity = Vector2(0, -speed)  
+            case "down":
+                self.velocity = Vector2(0, speed)
+            case "left":
+                self.velocity = Vector2(-speed, 0) 
+            case "right":
+                self.velocity = Vector2(speed, 0)
+
+
+    def get_current_direction_opposite(self):
+        match self.direction:
+            case "up":
+                return "down"
+            case "down":
+                return "up"
+            case "left":
+                return "right"
+            case "right":
+                return "left"
+    
+    def get_current_direction_alternatives(self):
+        if self.direction in ("up", "down"):
+            return ("left", "right")
+        return ("up", "down")
+    """--------------"""
 
     """Default Game loop functions"""
     def handle_event(self, event):
@@ -144,21 +199,21 @@ class Player(pygame.sprite.Sprite):
                     self.movements.append("right")
           
     def update(self, dt):
-    
         self.check_eating()
-        self.set_directional_velocity() #we get the velocity based on the available positions
+        self.check_traveling_through_passage()
+
+        self.set_directional_velocity()
+        self.check_booster_finished() 
 
         displacement = self.velocity * dt
         collision = self.check_edge_collision(displacement)
-        
 
+        #Finally make our movement
         if collision:
-            self.rect.topleft = self.grid.get_screen_position(self.array_pos)
+            self.rect.topleft = self.grid.get_screen_position(self.array_pos) #ensures its on exact square 
         else:
             self.rect.move_ip(displacement)
-        
-        self.check_traveling_through_passage()
- 
+            
     def draw(self, screen):
         
         if self.game.frame < 10: 
