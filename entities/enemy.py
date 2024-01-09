@@ -2,83 +2,62 @@ import pygame
 import colours
 import const
 
+
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, game, start_position, name):
-        super().__init__()
 
-        self.game = game
-        self.grid = game.grid
-        
-
-        """
-           Blinky (red) is very aggressive and hard to shake once he gets behind you, 
-           Pinky  (pink) tends to get in front of you and cut you off, 
-           Inky   (light blue) is the least predictable of the bunch, 
-           Clyde  (orange) seems to do his own thing and stay out of the way.
-        """
-        self.name = name
-
-
-        """
-            Scatter Mode: In this mode, the ghosts have specific pre-defined locations on the game board where 
-            they aim to go. Each ghost has its own scatter corner where it moves to when the game is in scatter mode. 
-            This behavior is generally used to create patterns in the ghost's movements and give players a chance to 
-            strategize around predictable ghost locations.
-
-            Frightened Mode: When Pac-Man eats a power pellet, the ghosts turn blue and enter frightened mode.
-            In this state, the ghosts become vulnerable, and their behavior changes. 
-            Instead of chasing Pac-Man, they will try to avoid him and move in a random or less predictable manner.
-            Pac-Man can eat the frightened ghosts for extra points during this time.
-        """
-        self.behaviour = ("CHASE", "SCATTER", "FRIGHTENED")
-
-
-        #Enemy images
-        self.movement_sheet = pygame.image.load('assets/images/enemy/enemies.jpeg')  
-        self.movement_sheet.set_colorkey(colours.BLACK)
-        self.movement_images = {
-                                0: {'right': [], 'left': [], 'up': [], 'down': []},
-                                1: {'right': [], 'left': [], 'up': [], 'down': []},
-                                2: {'right': [], 'left': [], 'up': [], 'down': []},
-                                3: {'right': [], 'left': [], 'up': [], 'down': []},
-                                4: {'right': [], 'left': [], 'up': [], 'down': []}}
-
-        
-        """
+    SPAWN_TIMER = -3000 #Blinky is released within a second of game starting and following ghosts are every 4s
+    MOVEMENT_SHEET = pygame.image.load('assets/images/enemy/enemies.jpeg')  
+    MOVEMENT_SHEET.set_colorkey(colours.BLACK)
+    MOVEMENT_IMAGES = {
+                        0: {'right': [], 'left': [], 'up': [], 'down': []},
+                        1: {'right': [], 'left': [], 'up': [], 'down': []},
+                        2: {'right': [], 'left': [], 'up': [], 'down': []},
+                        3: {'right': [], 'left': [], 'up': [], 'down': []},
+                        4: {'right': [], 'left': [], 'up': [], 'down': []}}
+    
+    """
         NOTE FOR NAME
         light blue = 0
         orange     = 1
         pink       = 2
         red        = 3
         dead       = 4
-        """
-        
-        #set sprite rect
-        self.image = self.initialise_sprite_images()
+    """
+
+    #Get all movements sprite sheets from sprites
+    for id, directions in MOVEMENT_IMAGES.items():
+            for direction in directions:
+                for c in range(2): 
+                    x = (c * const.TILE_WIDTH) 
+                    y = (id * const.TILE_HEIGHT) 
+                    rect = pygame.Rect(x, y, const.TILE_WIDTH, const.TILE_HEIGHT)
+                    MOVEMENT_IMAGES[id][direction].append(MOVEMENT_SHEET.subsurface(rect))
+
+
+    def __init__(self, game, start_position, id):
+        super().__init__()
+
+        self.game = game
+        self.grid = game.grid
+        self.id = id
+
+        self.current_image = self.image = Enemy.MOVEMENT_IMAGES[id]['right'][0]
         self.rect = self.image.get_rect()
-        self.current_image = self.movement_images[name]["right"][0]
 
-
-        """
-         The order of preference for choosing which ghost's counter to activate is: Pinky, then Inky, and then Clyde.
-        """
-
+        self.behaviour = ("CHASE", "SCATTER", "FRIGHTENED")
+        self.mode = None
+        self.in_pen = True
+        self.release = False
+        self.direction = "right"
         self.array_pos = start_position
 
-    def initialise_sprite_images(self):
-            
-        frame_width = 15
-        frame_height = 15 
+        self.names = {0 : "Blinky",
+                      1 : "Pinky",
+                      2 : "Cyan",
+                      3 : "Cylde"}
 
-        #init images
-        for _, direction in enumerate(self.movement_images[self.name]):
-            for c in range(2): 
-                x = (c * frame_width) 
-                y = (self.name * frame_height) 
-                rect = pygame.Rect(x, y, frame_width, frame_height)
-                self.movement_images[self.name][direction].append(self.movement_sheet.subsurface(rect))
-        return self.movement_images[self.name]['right'][0]
-
+    def __str__(self):
+        return f"{self.names[self.id]}, released : {self.release}"    
 
     @property
     def array_pos(self):
@@ -88,11 +67,37 @@ class Enemy(pygame.sprite.Sprite):
     def array_pos(self, position):
         self.rect.topleft =  self.grid.get_screen_position(position)
 
-
-
+    def handle_events(self):
+        pass
 
     def update(self, dt):
         pass
 
     def draw(self, screen):
         screen.blit(self.current_image, (self.rect.x - const.TILE_WIDTH, self.rect.y))
+
+
+class Blinky(Enemy):
+    def __init__(self, game, start_position, id):
+        super().__init__(game, start_position, id)
+
+        self.release_positions = [(13, 12), (13, 13), (12, 13), (11, 13)]
+
+
+class Pinky(Enemy):
+    def __init__(self, game, start_position, id):
+        super().__init__(game, start_position, id)
+
+        self.release_positions = [(13, 13), (12, 13), (11, 13)]
+
+class Inky(Enemy):
+    def __init__(self, game, start_position, id):
+        super().__init__(game, start_position, id)
+
+        self.release_positions = [(13, 14), (12, 14), (11, 14)]
+
+class Clyde(Enemy):
+    def __init__(self, game, start_position, id):
+        super().__init__(game, start_position, id)
+
+        self.release_positions = [(13, 15), (13, 14), (12, 14), (11, 14)]
