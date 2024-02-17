@@ -13,8 +13,8 @@ if __name__ == "__main__":
     pygame.display.set_caption("Pacman Game")
 
     # Scenes
-    main_menu = MainMenu()
-    current_scene = game = GameScene() 
+    current_scene = main_menu = MainMenu()
+    game = GameScene() 
     
     clock = pygame.time.Clock()
 

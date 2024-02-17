@@ -261,10 +261,6 @@ class Enemy(pygame.sprite.Sprite):
 
     def check_eaten(self):
 
-        states = [enemy.eaten for enemy in Enemy.enemies]
-        print(states)
-            
-
         if self.eaten and self.array_pos == self.default_position:
             self.in_pen = True
             self.eaten = False
@@ -324,7 +320,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.current_image = Enemy.MOVEMENT_IMAGES[self.id][self.direction][current_frame]
             
 
-            screen.blit(self.current_image, (self.rect.x - const.TILE_WIDTH, self.rect.y))
+            screen.blit(self.current_image, (self.rect.x - const.TILE_WIDTH, self.rect.y + 50))
             #pygame.draw.circle(screen, colours.WHITE, self.center_position, Enemy.CIRCLE_RADIUS, 2)
 
 

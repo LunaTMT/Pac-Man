@@ -13,19 +13,33 @@ class GameScene:
     def __init__(self):
         self.background = pygame.Surface(const.SCREEN_SIZE)
         self.background.fill((0, 0, 0))  # Black background for the game scene
-        self.game_font = pygame.font.Font(None, 36)
+        
         self.score = 0
+        self.highscore = 0
+        self.lives = 3
 
         self.maze_image = pygame.image.load('assets/images/maze.jpeg') 
+        self.life_image = pygame.image.load("assets/images/player/lives.png")
+
         self.grid = Grid.from_string(const.BASE_GRID)
 
+        self.enemies_released = 0
         self.frame = 0
         self.prev_time = pygame.time.get_ticks()
         
-        self.enemies_released = 0
+        self.game_over = False
+        
 
         self.spawn_entities()        
+
+        self.font = pygame.font.Font("assets/fonts/CrackMan.TTF", 32)
+        self.title_font = pygame.font.Font("assets/fonts/CrackMan.TTF", 22)
+
+        self.score_text_surface = self.font.render(str(self.score), True, colours.WHITE)  
+        self.score_text =  self.score_text_surface.get_rect()
+        self.score_text.center = (const.SCREEN_WIDTH // 2, const.SCREEN_HEIGHT // 2)
         
+        print("reinit")
 
     def spawn_entities(self):
         self.player = Player(self, (23, 14))
@@ -53,31 +67,49 @@ class GameScene:
         for enemy in self.enemies:
             enemy.stopped = True
 
+
+    def reset_game(self):
+        self.lives -= 1
+
+        if self.lives > 0:
+            self.player = Player(self, (23, 14))
+            enemy_spawn_positions = ((14, 12), (14, 13), (14, 14), (14, 15))
+            self.enemies = pygame.sprite.Group((cls(self, enemy_spawn_positions[i], i) for i, cls in enumerate((Blinky, Pinky, Inky, Clyde))))
+            Enemy.SPAWN_TIMER = pygame.time.get_ticks()
+            self.enemies_released = 0
+        else:
+            self.game_over = True
+     
+
     def handle_events(self, event):
-        self.player.handle_event(event)
-        
-        for enemy in self.enemies:
-            enemy.handle_event(event)
-        
+        if not self.game_over:
+            self.player.handle_event(event)
+            
+            for enemy in self.enemies:
+                enemy.handle_event(event)
+        elif event.type == pygame.KEYDOWN:
+
+            self.__init__()
 
     def update(self):
-        current_time = pygame.time.get_ticks()
-        dt = (current_time - self.prev_time) / 1000.0  # Convert to seconds
-        self.prev_time = current_time
-    
-        self.player.update(dt)
+        
+        if not self.game_over:
+            current_time = pygame.time.get_ticks()
+            dt = (current_time - self.prev_time) / 1000.0  # Convert to seconds
+            self.prev_time = current_time
+        
+            self.player.update(dt)
 
-        for enemy in self.enemies:
-            enemy.update(dt)
+            for enemy in self.enemies:
+                enemy.update(dt)
 
-  
-        self.check_if_release_from_pen()
+            self.check_if_release_from_pen()
 
 
 
     def draw(self, screen):
         screen.blit(self.background, (0, 0))  # Display the background
-        screen.blit(self.maze_image, (0, 0))     
+        screen.blit(self.maze_image, (0, 50))     
         
         self.grid.draw(screen)   
         self.player.draw(screen)
@@ -86,6 +118,31 @@ class GameScene:
         for enemy in self.enemies.sprites():
             enemy.draw(screen)
 
+        self.draw_score(screen)
+        self.draw_lives(screen)
+        self.draw_endgame(screen)
+
         pygame.display.flip()
 
-   
+
+    def draw_lives(self, screen):
+        for i in range(self.lives):
+            screen.blit(self.life_image, ((40 * i) + 290, 12.5 ))  
+
+    def draw_score(self, screen):
+        self.score_title_surface = self.font.render("Score   ", True, colours.WHITE)
+        self.score_title_rect =  self.score_title_surface.get_rect()
+        self.score_title_rect.center = ((const.SCREEN_WIDTH/2) - 120, 30)
+        screen.blit(self.score_title_surface, self.score_title_rect)
+
+        self.score_text_surface = self.font.render(str(self.score), True, colours.WHITE) 
+        self.score_text_rect =  self.score_text_surface.get_rect()
+        self.score_text_rect.topleft = (150, 13)
+        screen.blit(self.score_text_surface, self.score_text_rect)
+
+    def draw_endgame(self, screen):
+        if self.game_over:
+            self.endgame_surface = self.title_font.render("Press any key to restart.", True, colours.WHITE)  
+            self.endgame_surface_rect =  self.endgame_surface.get_rect()
+            self.endgame_surface_rect.center = (const.SCREEN_WIDTH//2, const.SCREEN_HEIGHT//2)
+            screen.blit(self.endgame_surface, self.endgame_surface_rect)

@@ -5,9 +5,12 @@ import const
 
 class MainMenu:
     def __init__(self):
-        self.title_font = pygame.font.Font(None, 48)
-        self.menu_font = pygame.font.Font(None, 36)
+
+
+        self.title_font = pygame.font.Font("assets/fonts/CrackMan.TTF", 40)
         self.title_text = self.title_font.render("Pacman Game", True, colours.WHITE)
+
+        self.menu_font = pygame.font.Font("assets/fonts/CrackMan.TTF", 25)
         self.start_text = self.menu_font.render("Press Enter to Start", True, colours.WHITE)
         self.quit_text = self.menu_font.render("Press Q to Quit", True, colours.WHITE)
 

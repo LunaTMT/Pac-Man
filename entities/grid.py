@@ -58,7 +58,7 @@ class Grid(list):
             for c in range(const.COLUMNS+1):
                 char = self[r][c]  
                 rect_x = (c * const.TILE_WIDTH) -  const.TILE_WIDTH
-                rect_y = (r * const.TILE_HEIGHT) 
+                rect_y = (r * const.TILE_HEIGHT) + 50
 
                 circle_x = rect_x + (const.TILE_WIDTH/2) 
                 circle_y = rect_y + (const.TILE_HEIGHT/2) 

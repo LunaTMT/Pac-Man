@@ -141,11 +141,11 @@ class Player(pygame.sprite.Sprite):
         match self.game.grid[r][c]:
             case ".":
                 self.game.grid[r][c] = ' '
-                self.eaten += 1
+                self.game.score += 10
             case "o":
                 self.game.grid[r][c] = ' '
                 self.eaten_power_up = True
-                self.eaten += 1
+                self.game.score += 100
                 self.game.make_enemies_frightened()
                 
     def check_traveling_through_passage(self):
@@ -174,6 +174,7 @@ class Player(pygame.sprite.Sprite):
         for enemy in collisions:
             if not enemy.eaten:
                 if enemy.mode == "FRIGHTENED":
+                    self.game.score += 200
                     enemy.eaten = True
                     enemy.speed = 200
             
@@ -311,14 +312,19 @@ class Player(pygame.sprite.Sprite):
                 self.current_image = self.movement_images[self.direction][current_frame]
         
         x, y = self.rect.topleft
-        screen.blit(self.current_image, (x-const.TILE_WIDTH, y))
+        screen.blit(self.current_image, (x-const.TILE_WIDTH, y+50))
 
     def draw_death(self):
         elapsed_time = pygame.time.get_ticks() - self.death_timer
 
         if elapsed_time >= 1500:
             self.current_image = self.death_images[-1]
+
+            if elapsed_time >= 2000:
+                self.game.reset_game()
         else:
             self.current_image = self.death_images[elapsed_time // 125]
+
+
 
     """--------------"""
