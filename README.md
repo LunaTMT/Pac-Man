@@ -12,7 +12,5 @@
 
 ```
 pip install -r requirements.txt
-
-
-
 ```
+![Screenshot_20240217_221548](https://github.com/LunaTMT/Pac-Man/assets/44672093/64f9ecdb-8d4e-405a-b6f8-00744ef86225)
