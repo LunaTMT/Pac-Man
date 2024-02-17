@@ -8,15 +8,17 @@ from entities.grid import Grid
 from entities.player import Player
 from entities.enemy import Enemy, Blinky, Pinky, Inky, Clyde
 
+pygame.mixer.init()
 
 class GameScene:
     def __init__(self):
+        pygame.mixer.init()
         self.background = pygame.Surface(const.SCREEN_SIZE)
         self.background.fill((0, 0, 0))  # Black background for the game scene
         
         self.score = 0
         self.highscore = 0
-        self.lives = 3
+        self.lives = 1
 
         self.maze_image = pygame.image.load('assets/images/maze.jpeg') 
         self.life_image = pygame.image.load("assets/images/player/lives.png")
@@ -28,7 +30,17 @@ class GameScene:
         self.prev_time = pygame.time.get_ticks()
         
         self.game_over = False
+        self.started = False
         
+        self.intro_sound = pygame.mixer.Sound("assets/sounds/pacman_beginning.wav")
+        self.intro_sound.set_volume(0.15)
+
+        self.siren_sound = pygame.mixer.Sound("assets/sounds/siren_1.wav")
+        self.siren_sound.set_volume(0.15)
+
+        self.game_over_sound = pygame.mixer.Sound("assets/sounds/game_over.wav")
+        self.game_over_sound.set_volume(0.15)
+
 
         self.spawn_entities()        
 
@@ -39,9 +51,12 @@ class GameScene:
         self.score_text =  self.score_text_surface.get_rect()
         self.score_text.center = (const.SCREEN_WIDTH // 2, const.SCREEN_HEIGHT // 2)
         
+        
+
         print("reinit")
 
     def spawn_entities(self):
+        
         self.player = Player(self, (23, 14))
         enemy_spawn_positions = ((14, 12), (14, 13), (14, 14), (14, 15))
         self.enemies = pygame.sprite.Group((cls(self, enemy_spawn_positions[i], i) for i, cls in enumerate((Blinky, Pinky, Inky, Clyde))))
@@ -70,6 +85,7 @@ class GameScene:
 
     def reset_game(self):
         self.lives -= 1
+        self.started = False
 
         if self.lives > 0:
             self.player = Player(self, (23, 14))
@@ -77,22 +93,27 @@ class GameScene:
             self.enemies = pygame.sprite.Group((cls(self, enemy_spawn_positions[i], i) for i, cls in enumerate((Blinky, Pinky, Inky, Clyde))))
             Enemy.SPAWN_TIMER = pygame.time.get_ticks()
             self.enemies_released = 0
-        else:
+        elif not self.game_over:
             self.game_over = True
+            self.game_over_sound.play()
      
 
     def handle_events(self, event):
         if not self.game_over:
             self.player.handle_event(event)
             
-            for enemy in self.enemies:
-                enemy.handle_event(event)
-        elif event.type == pygame.KEYDOWN:
-
+        
+        elif event.type == pygame.KEYDOWN:    
             self.__init__()
 
     def update(self):
         
+        if not self.started and not self.game_over:
+            self.intro_sound.play()
+            self.siren_sound.play(-1)
+            self.started = True
+
+
         if not self.game_over:
             current_time = pygame.time.get_ticks()
             dt = (current_time - self.prev_time) / 1000.0  # Convert to seconds

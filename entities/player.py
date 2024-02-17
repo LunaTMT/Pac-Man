@@ -3,6 +3,7 @@ from pygame import Vector2
 import const
 import colours
 
+pygame.mixer.init()
 class Player(pygame.sprite.Sprite):
     
     """INIT"""
@@ -48,6 +49,20 @@ class Player(pygame.sprite.Sprite):
         #thus top left position is not actually (1,1) but (1, 2)
 
         self.has_moved_from_default = False
+
+
+        self.death_sound = pygame.mixer.Sound("assets/sounds/pacman_death.wav")
+        self.chomp_sound = pygame.mixer.Sound("assets/sounds/pacman_chomp.wav")
+        self.eat_ghost_sound = pygame.mixer.Sound("assets/sounds/pacman_eatghost.wav")
+        self.power_pellet_sound = pygame.mixer.Sound("assets/sounds/power_pellet.wav")
+
+        self.death_sound.set_volume(0.15)
+        self.chomp_sound.set_volume(0.15)
+        self.eat_ghost_sound.set_volume(0.15)
+        self.power_pellet_sound.set_volume(0.15)
+
+
+
 
 
         self.quadrants = {"Q1": {"R"        : [0, 15],
@@ -137,16 +152,22 @@ class Player(pygame.sprite.Sprite):
     def check_eating(self):
         r, c = self.array_pos
         self.current_arr_pos = (r, c)
-       #Play sound here
+       
+        if self.game.grid[r][c] in ('.', 'o'):
+            self.chomp_sound.play()
+
         match self.game.grid[r][c]:
             case ".":
                 self.game.grid[r][c] = ' '
                 self.game.score += 10
             case "o":
+                self.power_pellet_sound.play()
                 self.game.grid[r][c] = ' '
                 self.eaten_power_up = True
                 self.game.score += 100
                 self.game.make_enemies_frightened()
+        
+        
                 
     def check_traveling_through_passage(self):
         if not self.in_tunnel:
@@ -174,11 +195,14 @@ class Player(pygame.sprite.Sprite):
         for enemy in collisions:
             if not enemy.eaten:
                 if enemy.mode == "FRIGHTENED":
+                    self.eat_ghost_sound.play()
                     self.game.score += 200
                     enemy.eaten = True
                     enemy.speed = 200
             
                 else:
+                    self.death_sound.play()
+                    self.game.siren_sound.stop()
                     self.dead = True
                     self.death_timer = pygame.time.get_ticks()
                     self.game.stop_enemies()
@@ -315,6 +339,9 @@ class Player(pygame.sprite.Sprite):
         screen.blit(self.current_image, (x-const.TILE_WIDTH, y+50))
 
     def draw_death(self):
+
+ 
+
         elapsed_time = pygame.time.get_ticks() - self.death_timer
 
         if elapsed_time >= 1500:
@@ -322,6 +349,7 @@ class Player(pygame.sprite.Sprite):
 
             if elapsed_time >= 2000:
                 self.game.reset_game()
+               
         else:
             self.current_image = self.death_images[elapsed_time // 125]
 

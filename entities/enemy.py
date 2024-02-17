@@ -7,6 +7,7 @@ import random
 from math import sqrt
 from pygame import Vector2
 
+pygame.mixer.init()
 class Enemy(pygame.sprite.Sprite):
      # Set the desired speed here
 
@@ -91,6 +92,9 @@ class Enemy(pygame.sprite.Sprite):
                            4: "DEADERS"}
         
         Enemy.enemies.append(self)
+
+        self.retreat_sound = pygame.mixer.Sound("assets/sounds/retreating.wav")
+        self.retreat_sound.set_volume(0.15)
 
     def __str__(self):
         return f"{self.name}, released: {self.released}"
