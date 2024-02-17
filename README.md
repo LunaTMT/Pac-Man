@@ -1,8 +1,12 @@
 # PacMan
 
+
+
+https://github.com/LunaTMT/Pac-Man/assets/44672093/8d7f94bb-1415-439d-a787-7996d896eff3
+
+
+
 ## Installation
-
-
 
 * To run this program please make sure you have [python](https://www.python.org/downloads/) installed on your system.
 
@@ -19,7 +23,4 @@ pip install -r requirements.txt
 ```
 python3 main.py
 ```
-
-
-https://github.com/LunaTMT/Pac-Man/assets/44672093/8d7f94bb-1415-439d-a787-7996d896eff3
 
