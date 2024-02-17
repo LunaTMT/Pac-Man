@@ -18,7 +18,7 @@ class GameScene:
         
         self.score = 0
         self.highscore = 0
-        self.lives = 1
+        self.lives = 3
 
         self.maze_image = pygame.image.load('assets/images/maze.jpeg') 
         self.life_image = pygame.image.load("assets/images/player/lives.png")
