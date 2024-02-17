@@ -1,0 +1,47 @@
+
+Blinky (red) is very aggressive and hard to shake once he gets behind you, 
+Blinky's is the most simple and direct, using Pac-Man's current tile as his target.
+
+
+Pinky  (pink) tends to get in front of you and cut you off, 
+Pinky behaves as he does because he does not target Pac-Man's tile directly. 
+Instead, he selects an offset four tiles away from Pac-Man in the direction Pac-Man is currently moving (with one exception).
+
+If Pac-Man is moving left, Pinky's target tile will be four game tiles to the left of Pac-Man's current tile.
+The same is true for right, up, down
+
+
+
+Inky   (light blue) is the least predictable of the bunch, 
+Inky first calculates a target tile that is two tiles ahead of Pac-Man's current direction. 
+This position is chosen to make it appear as if Inky is "ambushing" Pac-Man.
+
+Then, Inky considers the position of Blinky, the red ghost. 
+It takes the tile that is opposite to Blinky's current direction (the tile on the other side of Blinky) 
+from its current position.
+
+Inky uses a weighted combination of these two positions 
+the tile two ahead of Pac-Man and the one opposite to Blinky) to determine its actual target tile. 
+The exact formula for this combination might differ slightly between various versions of the game, 
+but it generally involves calculating a position that is a certain distance (typically halfway) 
+between these two calculated points.
+
+
+Clyde  (orange) seems to do his own thing and stay out of the way.
+
+
+
+
+Scatter Mode: In this mode, the ghosts have specific pre-defined locations on the game board where 
+they aim to go. Each ghost has its own scatter corner where it moves to when the game is in scatter mode. 
+This behavior is generally used to create patterns in the ghost's movements and give players a chance to 
+strategize around predictable ghost locations.
+
+Frightened Mode: When Pac-Man eats a power pellet, the ghosts turn blue and enter frightened mode.
+In this state, the ghosts become vulnerable, and their behavior changes. 
+Instead of chasing Pac-Man, they will try to avoid him and move in a random or less predictable manner.
+
+
+
+The order of preference for choosing which ghost's counter to activate is: Pinky, then Inky, and then Clyde.
+        
