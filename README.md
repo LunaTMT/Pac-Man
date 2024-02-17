@@ -20,3 +20,6 @@ pip install -r requirements.txt
 python3 main.py
 ```
 
+
+https://github.com/LunaTMT/Pac-Man/assets/44672093/8d7f94bb-1415-439d-a787-7996d896eff3
+
