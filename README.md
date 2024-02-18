@@ -1,10 +1,6 @@
 # PacMan
 
-
-
-https://github.com/LunaTMT/Pac-Man/assets/44672093/8d7f94bb-1415-439d-a787-7996d896eff3
-
-
+https://github.com/LunaTMT/Pac-Man/assets/44672093/3949d201-f1ae-4a45-870b-93abc601a23b
 
 ## Installation
 
