@@ -30,6 +30,7 @@ class GameScene:
         self.prev_time = pygame.time.get_ticks()
         
         self.game_over = False
+        self.game_won = False
         self.started = False
         
         self.intro_sound = pygame.mixer.Sound("assets/sounds/pacman_beginning.wav")
@@ -41,6 +42,10 @@ class GameScene:
         self.game_over_sound = pygame.mixer.Sound("assets/sounds/game_over.wav")
         self.game_over_sound.set_volume(0.15)
 
+        self.game_won_sound = pygame.mixer.Sound("assets/sounds/win.mp3")
+        self.game_won_sound.set_volume(0.15)
+
+
 
         self.spawn_entities()        
 
@@ -51,9 +56,7 @@ class GameScene:
         self.score_text =  self.score_text_surface.get_rect()
         self.score_text.center = (const.SCREEN_WIDTH // 2, const.SCREEN_HEIGHT // 2)
         
-        
 
-        print("reinit")
 
     def spawn_entities(self):
         
@@ -86,6 +89,7 @@ class GameScene:
     def reset_game(self):
         self.lives -= 1
         self.started = False
+        Enemy.enemies = []
 
         if self.lives > 0:
             self.player = Player(self, (23, 14))
@@ -99,7 +103,7 @@ class GameScene:
      
 
     def handle_events(self, event):
-        if not self.game_over:
+        if not (self.game_over or self.game_won):
             self.player.handle_event(event)
             
         
@@ -108,13 +112,13 @@ class GameScene:
 
     def update(self):
         
-        if not self.started and not self.game_over:
+        if not self.started and not (self.game_over or self.game_won):
             self.intro_sound.play()
             self.siren_sound.play(-1)
             self.started = True
 
 
-        if not self.game_over:
+        if not (self.game_over or self.game_won):
             current_time = pygame.time.get_ticks()
             dt = (current_time - self.prev_time) / 1000.0  # Convert to seconds
             self.prev_time = current_time
@@ -142,6 +146,7 @@ class GameScene:
         self.draw_score(screen)
         self.draw_lives(screen)
         self.draw_endgame(screen)
+        self.draw_wingame(screen)
 
         pygame.display.flip()
 
@@ -163,7 +168,19 @@ class GameScene:
 
     def draw_endgame(self, screen):
         if self.game_over:
-            self.endgame_surface = self.title_font.render("Press any key to restart.", True, colours.WHITE)  
+            self.endgame_surface = self.title_font.render("Press any key to restart", True, colours.WHITE)  
             self.endgame_surface_rect =  self.endgame_surface.get_rect()
-            self.endgame_surface_rect.center = (const.SCREEN_WIDTH//2, const.SCREEN_HEIGHT//2)
+            self.endgame_surface_rect.center = (const.SCREEN_WIDTH//2, const.SCREEN_HEIGHT//2 + 100)
+            screen.blit(self.endgame_surface, self.endgame_surface_rect)
+
+    def draw_wingame(self, screen):
+        if self.game_won:
+            self.endgame_surface = self.title_font.render("Winner", True, colours.WHITE)  
+            self.endgame_surface_rect =  self.endgame_surface.get_rect()
+            self.endgame_surface_rect.center = (const.SCREEN_WIDTH//2, const.SCREEN_HEIGHT//2 + 60)
+            screen.blit(self.endgame_surface, self.endgame_surface_rect)
+
+            self.endgame_surface = self.title_font.render("Press any key to restart", True, colours.WHITE)  
+            self.endgame_surface_rect =  self.endgame_surface.get_rect()
+            self.endgame_surface_rect.center = (const.SCREEN_WIDTH//2, const.SCREEN_HEIGHT//2 + 100)
             screen.blit(self.endgame_surface, self.endgame_surface_rect)

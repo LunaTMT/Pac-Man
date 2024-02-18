@@ -232,7 +232,6 @@ class Enemy(pygame.sprite.Sprite):
                 self.in_tunnel = False
 
     def check_frightened(self):
-        
         if self.mode == "FRIGHTENED":
             current_time = pygame.time.get_ticks()
             elapsed_time = current_time - Enemy.frightened_timer
@@ -241,7 +240,7 @@ class Enemy(pygame.sprite.Sprite):
                 for enemy in Enemy.enemies:
                     if not enemy.eaten:
                         enemy.speed = 120
-                        enemy.mode = "CHASE"
+                        enemy.mode = "SCATTER" if enemy.id == 3 else "CHASE"
                         enemy.flash_frightened = False
                     
             elif elapsed_time > 4000:
@@ -267,9 +266,11 @@ class Enemy(pygame.sprite.Sprite):
 
         if self.eaten and self.array_pos == self.default_position:
             self.in_pen = True
+            self.flash_frightened = False
+            self.mode = "SCATTER" if self.id == 3 else "CHASE"
             self.eaten = False
             self.speed = 120
-            self.mode = "SCATTER"
+            
 
     """
     DEFAULT FUNCTIONS FOR PYGAME OBJECT

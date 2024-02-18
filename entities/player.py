@@ -39,7 +39,7 @@ class Player(pygame.sprite.Sprite):
         self.boost_timer = 0
         self.velocity = Vector2(0, 0)
         self.movements = [] #queue
-        self.eaten = 0 
+        self.pellets_eaten = 0
         self.eaten_power_up = False
         self.in_tunnel = False
         self.dead = False
@@ -134,6 +134,13 @@ class Player(pygame.sprite.Sprite):
     """--------------"""  
 
     """Update Methods"""
+
+    def check_gamewon(self):
+        if self.pellets_eaten == 240:
+            self.game.game_won_sound.play()
+            self.game.game_won = True
+            self.game.siren_sound.stop()
+
     def check_edge_collision(self, displacement):
         def is_boundary_collision(position):
             new_position = position + displacement
@@ -158,9 +165,11 @@ class Player(pygame.sprite.Sprite):
 
         match self.game.grid[r][c]:
             case ".":
+                self.pellets_eaten += 1
                 self.game.grid[r][c] = ' '
                 self.game.score += 10
             case "o":
+                self.pellets_eaten += 1
                 self.power_pellet_sound.play()
                 self.game.grid[r][c] = ' '
                 self.eaten_power_up = True
@@ -301,7 +310,7 @@ class Player(pygame.sprite.Sprite):
           
     def update(self, dt):
         if not self.dead:
-
+            self.check_gamewon()
             self.check_eating()
             self.check_traveling_through_passage()
             self.check_collision()
