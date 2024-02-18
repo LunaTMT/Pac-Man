@@ -23,4 +23,8 @@ python3 main.py
 ```
 
 
+https://github.com/LunaTMT/Pac-Man/assets/44672093/fd2cb021-b77c-4484-83d8-a74034a578c4
+
+
+
 
